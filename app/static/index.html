@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chancenfinder</title>
+  <meta name="description" content="Passende Förderprogramme und öffentliche Ausschreibungen aus offiziellen Quellen finden.">
+  <link rel="stylesheet" href="/static/app.css?v=2">
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <a class="skip" href="#main">Zum Inhalt springen</a>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#/">Chancenfinder</a>
+      <nav aria-label="Hauptnavigation">
+        <a href="#/foerderung">Förderung</a>
+        <a href="#/auftraege">Aufträge</a>
+        <a href="#/quellen">Quellen &amp; Lizenzen</a>
+      </nav>
+    </div>
+  </header>
+
+  <div id="import-banner" class="banner" role="status" aria-live="polite" hidden></div>
+
+  <main id="main" class="wrap" tabindex="-1">
+    <!-- Startseite -->
+    <section id="view-home" class="view" hidden>
+      <div class="hero">
+        <h1>Welche Möglichkeiten passen zu dir?</h1>
+        <p class="lead">Beschreibe deine Situation und finde passende Förderprogramme oder laufende öffentliche Ausschreibungen – direkt aus offiziellen Datenquellen. Ohne Anmeldung.</p>
+        <div class="choices">
+          <a class="choice" href="#/foerderung">
+            <span class="choice-title">Förderung finden</span>
+            <span class="choice-text">Zuschüsse, Darlehen und weitere Programme von Bund, Ländern und EU</span>
+          </a>
+          <a class="choice" href="#/auftraege">
+            <span class="choice-title">Öffentliche Aufträge finden</span>
+            <span class="choice-text">Ausschreibungen mit laufender Angebots- oder Teilnahmefrist</span>
+          </a>
+        </div>
+      </div>
+      <section class="status-panel" aria-labelledby="status-h">
+        <h2 id="status-h">Datenstand</h2>
+        <div id="status-content" class="status-grid"><p class="muted">Datenstand wird geladen …</p></div>
+      </section>
+    </section>
+
+    <!-- Förderung -->
+    <section id="view-foerderung" class="view" hidden>
+      <h1>Förderung finden</h1>
+      <p class="lead small">Pflichtangaben sind mit * gekennzeichnet. Deine Angaben werden nicht gespeichert.</p>
+      <form id="form-foerderung" class="card form" novalidate>
+        <fieldset>
+          <legend>Antragsteller *</legend>
+          <div class="radio-row" id="applicant-options"></div>
+        </fieldset>
+        <div class="field">
+          <label for="f-land">Bundesland *</label>
+          <select id="f-land" name="land" required></select>
+        </div>
+        <div class="field">
+          <label for="f-description">Was möchtest du umsetzen? *</label>
+          <textarea id="f-description" name="description" rows="3" required minlength="3" maxlength="2000"
+            placeholder="z. B. Photovoltaikanlage und Wärmepumpe für unser Einfamilienhaus"></textarea>
+        </div>
+        <details class="optional">
+          <summary>Weitere Angaben (optional)</summary>
+          <div class="grid-2">
+            <div class="field">
+              <label for="f-topic">Themenbereich</label>
+              <select id="f-topic" name="topic"><option value="">Kein bestimmter</option></select>
+            </div>
+            <div class="field">
+              <label for="f-budget">Geplantes Investitionsbudget (€)</label>
+              <input id="f-budget" name="budget" type="number" min="0" step="100" inputmode="numeric">
+            </div>
+            <div class="field" id="employees-field" hidden>
+              <label for="f-employees">Anzahl Mitarbeitende</label>
+              <input id="f-employees" name="employees" type="number" min="0" step="1" inputmode="numeric">
+            </div>
+            <fieldset class="field">
+              <legend>Vorhaben bereits begonnen?</legend>
+              <div class="radio-row">
+                <label><input type="radio" name="started" value="nein"> Nein</label>
+                <label><input type="radio" name="started" value="ja"> Ja</label>
+                <label><input type="radio" name="started" value="unbekannt" checked> Unbekannt</label>
+              </div>
+            </fieldset>
+          </div>
+        </details>
+        <div class="form-error" id="foerder-error" role="alert" hidden></div>
+        <button type="submit" class="btn primary">Förderprogramme suchen</button>
+      </form>
+      <div id="foerder-results" class="results" aria-live="polite"></div>
+    </section>
+
+    <!-- Aufträge -->
+    <section id="view-auftraege" class="view" hidden>
+      <h1>Öffentliche Aufträge finden</h1>
+      <p class="lead small">Pflichtangaben sind mit * gekennzeichnet. Deine Angaben werden nicht gespeichert.</p>
+      <form id="form-auftraege" class="card form" novalidate>
+        <div class="field">
+          <label for="a-offering">Welche Leistungen oder Produkte bietest du an? *</label>
+          <textarea id="a-offering" name="offering" rows="3" required minlength="3" maxlength="2000"
+            placeholder="z. B. Unterhaltsreinigung und Glasreinigung von Bürogebäuden"></textarea>
+        </div>
+        <fieldset>
+          <legend>Einsatzgebiet</legend>
+          <label class="check-all"><input type="checkbox" id="a-bundesweit" checked> Bundesweit</label>
+          <div class="checkbox-grid" id="land-checkboxes"></div>
+        </fieldset>
+        <details class="optional">
+          <summary>Weitere Angaben (optional)</summary>
+          <div class="grid-2">
+            <div class="field">
+              <label for="a-keywords">Zusätzliche Suchbegriffe</label>
+              <input id="a-keywords" name="keywords" type="text" maxlength="500" placeholder="z. B. Fensterreinigung">
+            </div>
+            <div class="field">
+              <label for="a-cpv">CPV-Codes</label>
+              <input id="a-cpv" name="cpv" type="text" maxlength="300" placeholder="z. B. 90910000, 90911200" aria-describedby="cpv-hint">
+              <small id="cpv-hint" class="hint">Mehrere Codes mit Komma trennen. Kürzere Codes (z. B. 909) finden alle Untergruppen.</small>
+            </div>
+            <div class="field span-2">
+              <label for="a-qualifications">Vorhandene Qualifikationen bzw. Nachweise</label>
+              <input id="a-qualifications" name="qualifications" type="text" maxlength="1000" placeholder="z. B. ISO 9001, Referenzen, Präqualifikation">
+            </div>
+          </div>
+        </details>
+        <div class="form-error" id="auftrag-error" role="alert" hidden></div>
+        <button type="submit" class="btn primary">Aufträge suchen</button>
+      </form>
+      <div id="auftrag-results" class="results" aria-live="polite"></div>
+    </section>
+
+    <!-- Quellen -->
+    <section id="view-quellen" class="view" hidden>
+      <h1>Quellen &amp; Lizenzen</h1>
+      <div class="card prose">
+        <h2>Förderprogramme</h2>
+        <p>Datenbasis: <strong>Förderdatenbank des Bundes</strong>, Bundesministerium für Wirtschaft und Energie (BMWE), offizieller XML-Export
+          (<a href="https://www.foerderdatenbank.de/FDB/Content/DE/FAQ/05-export-foerderdatenbank.html" rel="noopener noreferrer" target="_blank">Beschreibung und Download</a>).</p>
+        <p>Lizenz: <a href="https://creativecommons.org/licenses/by/4.0/deed.de" rel="noopener noreferrer" target="_blank">Creative Commons Namensnennung 4.0 (CC BY 4.0)</a>.
+          Namensnennung: „Quelle: Förderdatenbank des Bundes, BMWE, www.foerderdatenbank.de“. Inhalte wurden technisch aufbereitet (HTML in Text umgewandelt, gekürzt dargestellt); maßgeblich ist das jeweilige Original.</p>
+        <h2>Öffentliche Aufträge</h2>
+        <p>Datenbasis: <strong>Bekanntmachungsservice</strong> (oeffentlichevergabe.de), Open-Data-Schnittstelle <code>/api/notice-exports</code> im Format eForms
+          (<a href="https://oeffentlichevergabe.de/documentation/swagger-ui/opendata/index.html" rel="noopener noreferrer" target="_blank">API-Dokumentation</a>).</p>
+        <p>Die vom Dienst gelieferten OCDS-Daten weisen die Lizenz CC0 aus (<a href="https://oeffentlichevergabe.de/ui/de/publicationPolicy" rel="noopener noreferrer" target="_blank">Veröffentlichungsrichtlinie</a>). Es werden nur Bekanntmachungen aus dem unten angezeigten Importzeitraum berücksichtigt – <strong>keine vollständige Abdeckung aller öffentlichen Aufträge</strong>.</p>
+        <h2>Hinweise</h2>
+        <ul>
+          <li>Alle Ergebnisse sind eine unverbindliche Vorauswahl – keine Förderzusage und keine bestätigte Teilnahmeberechtigung.</li>
+          <li>Suchprofile werden nicht gespeichert. Es gibt keine Tracker und keine externen Skripte.</li>
+          <li>Die Zuordnung erfolgt regelbasiert; die Suchlogik ist in der README beschrieben.</li>
+        </ul>
+      </div>
+      <section class="status-panel" aria-labelledby="status-h2">
+        <h2 id="status-h2">Datenstand</h2>
+        <div id="status-content-2" class="status-grid"></div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="detail" aria-labelledby="detail-title">
+    <div class="dialog-head">
+      <h2 id="detail-title">Details</h2>
+      <button type="button" class="btn ghost" id="detail-close" aria-label="Details schließen">Schließen</button>
+    </div>
+    <div id="detail-body" class="dialog-body"></div>
+  </dialog>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Daten: Förderdatenbank des Bundes (BMWE, CC BY 4.0) · Bekanntmachungsservice oeffentlichevergabe.de. Ergebnisse ohne Gewähr – maßgeblich sind die Originalquellen. <a href="#/quellen">Quellen &amp; Lizenzen</a></p>
+    </div>
+  </footer>
+  <script src="/static/app.js?v=2"></script>
+</body>
+</html>

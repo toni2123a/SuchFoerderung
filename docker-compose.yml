@@ -1,0 +1,18 @@
+services:
+  chancenfinder:
+    build: .
+    image: chancenfinder:latest
+    container_name: chancenfinder
+    # Einzelner Dienst: Standard-Bridge genügt (vermeidet ein zusätzliches Compose-Netzwerk)
+    network_mode: bridge
+    ports:
+      - "8000:8000"
+    volumes:
+      - chancenfinder-data:/data
+    environment:
+      # Anzahl der beim ersten Start importierten abgeschlossenen Kalendertage
+      VERGABE_INITIAL_DAYS: "7"
+    restart: unless-stopped
+
+volumes:
+  chancenfinder-data:

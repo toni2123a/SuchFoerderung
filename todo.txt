@@ -1,0 +1,182 @@
+Erstelle in diesem Projekt eine einfache, vollständig funktionsfähige deutsche Webanwendung namens „Chancenfinder“.
+
+Ziel: Nutzer beschreiben ihre Situation und finden dazu passende Förderprogramme oder öffentliche Ausschreibungen. Die Anwendung muss echte Daten aus offiziellen Quellen abrufen, speichern und durchsuchen. Baue eine überschaubare erste Version, keine komplexe Plattform.
+
+## 1. Technischer Aufbau
+
+Falls das Projekt bereits einen geeigneten Stack hat, verwende diesen weiter. Ansonsten:
+- Python mit FastAPI für Backend und Datenimport.
+- SQLite als persistente Datenbank.
+- Einfaches responsives Frontend mit HTML, CSS und JavaScript.
+- Docker Compose zum Starten mit einem einzigen Befehl.
+- Keine kostenpflichtigen Dienste und kein notwendiger KI-API-Key.
+
+## 2. Offizielle Datenquellen
+
+### Öffentliche Ausschreibungen
+
+Nutze die offizielle Open-Data-Schnittstelle des Bekanntmachungsservices:
+https://oeffentlichevergabe.de/documentation/swagger-ui/opendata/index.html
+
+Die Schnittstelle stellt unter anderem Tages- beziehungsweise Monatsexporte über `/api/notice-exports` bereit. Lies vor der Implementierung die aktuelle OpenAPI-Beschreibung und prüfe mit einem echten Abruf die Parameter und Datenformate. Erfinde keine API-Parameter.
+
+Importiere beim ersten Start zunächst die letzten sieben abgeschlossenen Kalendertage. Verarbeite anschließend täglich neue Bekanntmachungen und hole fehlgeschlagene Tage erneut nach.
+
+Berücksichtige:
+- Veröffentlichungen sind nicht automatisch laufende Ausschreibungen.
+- Unterscheide Ausschreibungen, Vorinformationen, Änderungen, Ergebnisse und Aufhebungen anhand der gelieferten Daten.
+- Verknüpfe Versionen und Berichtigungen anhand offizieller Kennungen; verwende für die Suche den aktuellen bekannten Stand.
+- Zeige standardmäßig nur Verfahren an, bei denen noch eine Teilnahme beziehungsweise Angebotsabgabe möglich erscheint.
+- Unbekannte Fristen als „Frist nicht angegeben“ kennzeichnen.
+- Beachte Lose und gegebenenfalls unterschiedliche Fristen je Los.
+- Zeige den verfügbaren Importzeitraum transparent an. Behaupte keine vollständige Abdeckung aller öffentlichen Aufträge.
+
+### Förderprogramme
+
+Nutze den offiziellen XML-Export der Förderdatenbank. Download und Schnittstellenbeschreibung sind auf dieser Seite verlinkt:
+https://www.foerderdatenbank.de/FDB/Content/DE/FAQ/05-export-foerderdatenbank.html
+
+Ermittle dort den tatsächlichen Downloadlink und lies die Schnittstellenbeschreibung. Prüfe das reale XML, bevor du den Importer baust. Verwende den Export anstelle eines allgemeinen Website-Scrapers.
+
+Importiere die verfügbaren Förderprogramme von Bund, Ländern und EU. Berücksichtige die Lizenzbedingungen und die erforderliche Namensnennung.
+
+Wichtig für beide Datenquellen:
+- Daten serverseitig abrufen und lokal speichern.
+- Keine vollständigen Quelldownloads bei jeder Nutzersuche.
+- Import beim Start, falls noch keine Daten vorhanden sind; danach einmal täglich.
+- Zusätzlich einen dokumentierten CLI-Befehl zum manuellen Aktualisieren bereitstellen.
+- Timeouts, begrenzte Wiederholungen und verständliche Fehlerprotokolle verwenden.
+- XML sicher verarbeiten: keine externen Entitäten oder DTD-Auflösung.
+- Downloads und entpackte Archive hinsichtlich Größe begrenzen.
+- Doppelte Einträge vermeiden.
+- Bei fehlgeschlagenem Import den letzten gültigen Datenbestand behalten.
+- Erst einen vollständig geprüften Förderexport übernehmen, bevor alte Einträge entfernt oder deaktiviert werden.
+- Rohdaten beziehungsweise Originaltexte und Quellkennungen zur Nachvollziehbarkeit erhalten.
+- Quellen als Text behandeln, geliefertes HTML bereinigen und externe Links validieren.
+
+Falls eine Quelle nicht erreichbar ist, zeige den Fehler und den letzten erfolgreichen Datenstand an. Ersetze echte Daten niemals unbemerkt durch Beispieldaten.
+
+## 3. Einfache Benutzeroberfläche
+
+Startseite mit Überschrift:
+„Welche Möglichkeiten passen zu dir?“
+
+Darunter zwei Schaltflächen:
+- „Förderung finden“
+- „Öffentliche Aufträge finden“
+
+Keine Registrierung und kein Benutzerkonto erforderlich.
+
+### Formular für Förderungen
+
+Pflichtangaben:
+- Antragsteller: Privatperson, Unternehmen/Selbstständiger, Verein, Kommune oder Forschungseinrichtung.
+- Bundesland.
+- Beschreibung: „Was möchtest du umsetzen?“
+
+Optionale Angaben:
+- Themenbereich, beispielsweise Digitalisierung, Energie, Gebäude, Gründung, Weiterbildung oder Mobilität.
+- Geplantes Investitionsbudget.
+- Bei Unternehmen: Mitarbeiterzahl.
+- Vorhaben bereits begonnen: Ja, Nein oder Unbekannt.
+
+### Formular für öffentliche Aufträge
+
+- „Welche Leistungen oder Produkte bietest du an?“ als Freitext.
+- Einsatzgebiet: ein oder mehrere Bundesländer oder bundesweit.
+- Optionale Suchbegriffe und CPV-Codes.
+- Optional vorhandene Qualifikationen beziehungsweise Nachweise.
+
+Zunächst keine Entfernungsberechnung und keinen externen Kartendienst einbauen.
+
+## 4. Suche und Zuordnung
+
+Baue zunächst eine nachvollziehbare regelbasierte Suche ohne externe KI.
+
+Nutze die strukturierten Quelldaten, eine Volltextsuche und eine kleine nachvollziehbare Liste von Synonymen für häufige Themen.
+
+Unterscheide:
+- Nachweislich passende Merkmale.
+- Nachweisliche Ausschlusskriterien.
+- Unbekannte beziehungsweise noch zu prüfende Voraussetzungen.
+
+Harte Ausschlüsse nur anwenden, wenn sie aus den Daten zuverlässig hervorgehen. Unbekannte Angaben nicht als erfüllt behandeln.
+
+Beispiele:
+- Bundesweit geltende Programme bei allen Bundesländern berücksichtigen.
+- Den Sitz eines Fördergebers nicht mit dem Fördergebiet verwechseln.
+- Den Sitz eines Auftraggebers nicht mit dem Ausführungsort verwechseln.
+- Unternehmensgröße oder Vorhabensbeginn nur dann als Ausschluss verwenden, wenn die Quelle dazu eindeutige Voraussetzungen enthält.
+- Aus fehlenden Angaben zu Nachweisen keine Eignung für eine Ausschreibung ableiten.
+
+Sortiere Treffer nach nachvollziehbarer Relevanz. Verwende keine scheinpräzisen Prozentwerte für Förderfähigkeit oder Erfolgschancen.
+
+Beschreibe die Ergebnisse als Vorauswahl, nicht als verbindliche Förderzusage oder bestätigte Teilnahmeberechtigung.
+
+## 5. Ergebnisanzeige
+
+Zeige übersichtliche Karten mit:
+- Titel.
+- Kurzer Beschreibung.
+- Fördergeber beziehungsweise öffentlichem Auftraggeber.
+- Fördergebiet beziehungsweise Ausführungsort.
+- Förderart und Förderhöhe beziehungsweise Auftragswert, soweit angegeben.
+- Frist und Status, soweit bekannt.
+- „Warum wird dieser Treffer angezeigt?“
+- „Das musst du noch prüfen.“
+- Link zur Originalquelle.
+- Zeitpunkt der letzten erfolgreichen Aktualisierung.
+
+Fehlende Angaben ausdrücklich als „Nicht angegeben“ anzeigen. Keine Beträge, Voraussetzungen oder Fristen erfinden. Bei Zusammenfassungen Zahlen und Bedingungen unverändert lassen; im Zweifel den Originalauszug verwenden.
+
+Biete eine Detailansicht mit den ausführlicheren Quellinformationen.
+
+Zusätzliche Filter:
+- Bundesland.
+- Stichwort.
+- Bei Förderungen: Förderart.
+- Bei Ausschreibungen: bekannte offene Fristen.
+
+Zeige bei null Treffern eine verständliche Meldung und Möglichkeiten, die Suche zu erweitern. Keine offensichtlich unpassenden Ergebnisse auffüllen.
+
+## 6. Gestaltung und Datenschutz
+
+- Moderne, ruhige und leicht verständliche deutsche Oberfläche.
+- Gut auf Smartphone und Desktop bedienbar.
+- Klare Formularbeschriftungen und sichtbare Tastaturfokusse.
+- Keine überladene Verwaltungsoptik.
+- Während Import und Suche verständliche Ladezustände anzeigen.
+- Suchprofile standardmäßig nicht dauerhaft speichern.
+- Keine Freitexte oder persönlichen Angaben in Anwendungslogs schreiben.
+- Keine externen Tracker.
+- Quellen- und Lizenzhinweise zugänglich anzeigen.
+
+## 7. Umsetzung und Prüfung
+
+Arbeite eigenständig bis zu einer startfähigen Anwendung.
+
+Vorgehen:
+1. Bestehendes Projekt prüfen.
+2. Beide Datenquellen und ihre aktuellen Formate anhand realer Abrufe untersuchen.
+3. Zuerst einen funktionierenden Import je Quelle herstellen.
+4. Datenbank, Suche und Oberfläche implementieren.
+5. Mit echten importierten Datensätzen prüfen.
+
+Schreibe gezielte Tests für:
+- Verarbeitung realistisch aufgebauter Quelldaten.
+- Wiederholten Import ohne Duplikate.
+- Berichtigungen und abgelaufene Angebotsfristen.
+- Bundesweite Förderungen und regionale Ausschlüsse.
+- Umgang mit unbekannten Voraussetzungen.
+- Erhalt des vorhandenen Datenbestands bei Importfehlern.
+
+Lege eine kurze README an mit:
+- Startbefehl.
+- Datenquellen und Lizenzhinweisen.
+- Manuellem Importbefehl.
+- Beschreibung der Suchlogik.
+- Bekannten Grenzen der Datenabdeckung.
+
+Die Umsetzung ist erst fertig, wenn beide Datenwege mit echten Abrufen geprüft wurden und Ergebnisse aus diesen Daten in der Oberfläche erscheinen. Falls ein externer Zugang blockiert ist, dokumentiere die genaue Ursache und die noch nicht geprüften Funktionen ehrlich.
+
+Beginne direkt mit der Umsetzung. Halte die erste Version bewusst klein und funktional.
